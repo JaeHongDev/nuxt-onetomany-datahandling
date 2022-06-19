@@ -4,7 +4,7 @@
   <v-row>
     <v-col>
       <v-card class='pa-1 d-flex justify-end'>
-        <v-btn @click='select'>조회</v-btn>
+        <v-btn @click=''>조회</v-btn>
         <v-btn @click='add'>추가</v-btn>
         <v-btn>삭제</v-btn>
         <v-btn>확인</v-btn>
@@ -16,16 +16,46 @@
   <v-row>
     <v-col>
       <v-card>
-        <v-data-table :headers='headers' :items='items' @click:row='selectRow'></v-data-table>
+        <v-select
+          v-model="enabled"
+          :items="slots"
+          label="Slot"
+          clearable
+        ></v-select>
+        <v-data-table
+          :headers="headerArray"
+          :items="itemArray"
+          hide-default-footer
+          item-key="name"
+          class="elevation-1"
+        >
+          <template
+            v-slot:body="{ items }"
+          >
+            <tbody>
+            <tr
+              v-for="(item,index) in items"
+              :key="item.name"
+            >
+              <td>{{ item.name }}</td>
+              <td>{{ item.calories }}</td>
+              <td>CONTENT</td>
+              <td>CONTENT</td>
+              <td>CONTENT</td>
+              <td>CONTENT</td>
+            </tr>
+            </tbody>
+          </template>
+        </v-data-table>
       </v-card>
     </v-col>
     <v-col>
       <v-card class='pa-3'>
-         <v-text-field v-model= "item.callNumber" :v-text= "item.callNumber" label='발신번호' @change='changed(item,"callNumber",$event)'></v-text-field>
-         <v-text-field v-model= "item.manager" :v-text= "item.manager" label='담당자' @change='changed(item,"manager",$event)'></v-text-field>
-         <v-text-field v-model= "item.group" :v-text= "item.group" label='조직'></v-text-field>
-         <v-text-field v-model= "item.states" :v-text= "item.states" label='상태'></v-text-field>
-         <v-text-field v-model= "item.memo" :v-text= "item.memo" label='메모'></v-text-field>
+<!--         <v-text-field :value= "item.callNumber"  label='발신번호' @change='changed("callNumber",$event)'></v-text-field>-->
+<!--         <v-text-field :value= "item.manager"  label='담당자' @change='changed("manager",$event)'></v-text-field>-->
+<!--         <v-text-field :value= "item.group"  label='조직'></v-text-field>-->
+<!--         <v-text-field :value= "item.states"  label='상태'></v-text-field>-->
+<!--         <v-text-field :value= "item.memo"  label='메모'></v-text-field>-->
       </v-card>
     </v-col>
   </v-row>
@@ -33,37 +63,64 @@
 </template>
 
 <script>
+
+import {mapGetters,mapState} from "vuex";
+
 export default {
-  name: 'IndexPage',
-  data(){
+  data () {
     return {
-      headers: [
-        {text:'발신번호', value:'callNumber'},
-        {text:'담당자', value:'manager'},
-        {text:'조직', value:'group'},
-        {text:'상태', value:'states'},
-        {text:'메모', value:'memo'},
+      enabled: null,
+      search: null,
+      headerArray: [
+        {
+          text: 'Dessert (100g serving)',
+          align: 'start',
+          sortable: false,
+          value: 'name',
+        },
+        { text: 'Calories', value: 'calories' },
+        { text: 'Fat (g)', value: 'fat' },
+        { text: 'Carbs (g)', value: 'carbs' },
+        { text: 'Protein (g)', value: 'protein' },
+        { text: 'Iron (%)', value: 'iron' },
       ],
-      items:[],
-      item:{}
     }
   },
-  methods:{
-    select:function(){
-      this.$data.items = this.$store.state.dataTable.list
+
+  mounted:{
+    ...mapState({
+      itemArray:"dataTable/list"
+    })
+  },
+  computed: {
+    showSelect () {
+      return this.isEnabled('header.data-table-select') || this.isEnabled('item.data-table-select')
     },
-    add:function(){
-      this.$store.commit("dataTable/add")
+    hideHeaders () {
+      return !this.showSelect
     },
-    selectRow:function(item){
-      //this.$store.commit("dataTable/changed",item);
-      this.item = item;
+    isLoading () {
+      return this.isEnabled('progress')
     },
-    changed:function(item,name,event){
-      console.log(event);
-      console.log({...item,manager:event});
-      this.$store.commit("dataTable/changed",{...item,manager:event})
-    }
-  }
+  },
+
+  watch: {
+    enabled (slot) {
+      if (slot === 'no-data') {
+        this.items = []
+      } else if (slot === 'no-results') {
+        this.search = '...'
+      } else {
+        this.search = null
+        this.items = desserts
+      }
+    },
+  },
+
+  methods: {
+    isEnabled (slot) {
+      return this.enabled === slot
+    },
+  },
 }
 </script>

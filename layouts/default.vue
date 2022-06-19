@@ -106,6 +106,11 @@ export default {
           icon: 'mdi-chart-bubble',
           title: 'Inspire',
           to: '/inspire'
+        },
+        {
+          icon:'mdi-apps',
+          title:"투두리스트",
+          to:'/todos'
         }
       ],
       miniVariant: false,
